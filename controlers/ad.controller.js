@@ -11,7 +11,7 @@ class AdController{
         res.json(ads.rows);
     }
     async getOneAd(req, res){
-        const id=req.params.id
+        const id=req.params.id//переделать под сбор от имени
         const user= await db.query('SELECT * FROM t_ad where id=$1', [id]);
         res.json(user.rows[0]);
     }

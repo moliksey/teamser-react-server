@@ -12,7 +12,7 @@ class DialogController{
     }
     async deleteDialog(req, res){
         const id=req.params.id
-        const message= await db.query('DELETE FROM t_messages where message_id=$1', [id]);
+        //const message= await db.query('DELETE FROM t_messages where dialog_id=$1', [id]);
         const dialog= await db.query('DELETE FROM t_dialogs where id=$1', [id]);
         res.json({"deletedMessages":message.rows,"deletedDialogs":dialog.rows});
     }
