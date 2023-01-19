@@ -8,7 +8,7 @@ class UserController {
         const {username, password} = req.body
         const passwordHashed = await passwordHash.generate(password);
         const newUser = await db.query('INSERT INTO t_user (password, username) values ($1, $2) returning *', [passwordHashed, username]);
-        res.json(newUser.rows[0]);
+        res.json(newUser.rows[0].username);
     }
 
     async getUsers(req, res) {
