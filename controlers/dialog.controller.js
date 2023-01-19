@@ -7,7 +7,7 @@ class DialogController {
         const {user2_id} = req.body
         const decoded = jwt.verify(req.headers.authorization.split(' ')[1], SECRET_WORD)
         const newDialog = await db.query('INSERT INTO t_dialogs (user1_id, user2_id) values ($1, $2) returning *', [decoded.userId, user2_id]);
-        res.json(newDialog);
+        res.json(newDialog.rows[0]);
     }
 
     async getUsersDialogs(req, res) {

@@ -11,13 +11,14 @@ const roleRouter = require('./routes/role.routes')
 const userInformationRouter = require('./routes/userInformation.routes')
 const userToRolesRouter = require('./routes/userToRoles.routes')
 const authRouter = require('./routes/auth.routes')
-
+const cors = require('cors')
 
 const app = new Express();
 
 //app.use((ctx, next)=>{
 //    ctx.body='hello world';
 //});
+app.use(cors())
 app.use(Express.json())
 app.use('/api', userRouter)
 app.use('/api', adRouter)
@@ -32,5 +33,6 @@ app.use('/api', userToRolesRouter)
 app.use('/api', authRouter)
 app.use(passport.initialize())
 require('./middlewares/authJwtMiddleware')(passport)
+
 
 app.listen(3000);
