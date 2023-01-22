@@ -8,6 +8,6 @@ router.get('/ad/:id', passport.authenticate('jwt', {session: false}), adControll
 router.get('/ad', adController.getAd);
 router.put('/ad', passport.authenticate('jwt', {session: false}), adController.updateAd);
 router.delete('/ad/:id', passport.authenticate('jwt', {session: false}), adController.deleteAd);
-
+router.get('/myAd', passport.authenticate('jwt', {session: false}), adController.getMyAd);
 
 module.exports = router;

@@ -26,6 +26,14 @@ class UserController {
         const user = await db.query('SELECT * FROM t_user where id=$1', [id]);
         res.json(user.rows[0].username);
     }
+    async getMyInformation(req, res){
+        const decoded = jwt.verify(req.headers.authorization.split(' ')[1], SECRET_WORD);
+        const ans={
+            id: decoded.userId,
+            username: decoded.username,
+        }
+        res.json(ans)
+    }
 
     async updateUser(req, res) {
         const {username, password} = req.body
