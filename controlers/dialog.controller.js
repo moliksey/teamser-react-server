@@ -6,8 +6,12 @@ class DialogController {
     async createDialog(req, res) {
         const {user2_id} = req.body
         const decoded = jwt.verify(req.headers.authorization.split(' ')[1], SECRET_WORD)
+        const dialog = await db.query('SELECT * FROM t_dialogs where (user1_id=$1 and user2_id=$2) or (user1_id=$2 and user2_id=$1)', [decoded.userId, user2_id]);
+        if(dialog.rows.length>0)
+            res.json(dialog.rows[0])
+        else{
         const newDialog = await db.query('INSERT INTO t_dialogs (user1_id, user2_id) values ($1, $2) returning *', [decoded.userId, user2_id]);
-        res.json(newDialog.rows[0]);
+        res.json(newDialog.rows[0]);}
     }
 
     async getUsersDialogs(req, res) {

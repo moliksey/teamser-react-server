@@ -7,7 +7,7 @@ CREATE TABLE t_games(
     id BIGSERIAL PRIMARY KEY,
     game_name text NOT NULL UNIQUE
 );
-insert into t_games(game_name) values ('LeagueOfLegends'), ('Dota 2'), ('CS GO'), ('Rocket League'), ('Gensin Impact');
+insert into t_games(game_name) values ('LeagueOfLegends'), ('Dota 2'), ('CS GO'), ('Rocket League'), ('Genshin Impact');
 CREATE TABLE t_goals(
     id BIGSERIAL PRIMARY KEY,
     goal_name text NOT NULL UNIQUE

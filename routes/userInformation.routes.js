@@ -7,6 +7,6 @@ router.post('/userInformation', passport.authenticate('jwt', {session: false}), 
 router.get('/userInformation/:id', passport.authenticate('jwt', {session: false}), userInformationController.getUsersUserInformation);
 router.put('/userInformation', passport.authenticate('jwt', {session: false}), userInformationController.updateUserInformation);
 router.delete('/userInformation/:id', passport.authenticate('jwt', {session: false}), userInformationController.deleteUserInformation);
-
+router.get('/MyUserInformation',passport.authenticate('jwt', {session: false}), userInformationController.getMyUsersUserInformation);
 
 module.exports = router;

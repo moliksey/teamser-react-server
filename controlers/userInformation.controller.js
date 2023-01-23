@@ -14,21 +14,30 @@ class UserInformationController {
     }
 
     async getUsersUserInformation(req, res) {
+
         const id = req.params.id
         const userInformation = await db.query('SELECT * FROM t_user_information where id=$1', [id]);
+        const user = await db.query('SELECT * FROM t_user where id=$1', [id]);
+
+        res.json({userInfo:userInformation.rows[0],
+        username:user.rows[0].username,
+        userId:user.rows[0].id});
+    }
+
+    async getMyUsersUserInformation(req, res) {
+        const decoded = jwt.verify(req.headers.authorization.split(' ')[1], SECRET_WORD)
+        const userInformation = await db.query('SELECT * FROM t_user_information where id=$1', [decoded.userId]);
         res.json(userInformation.rows[0]);
     }
 
     async updateUserInformation(req, res) {
-        const {birthdate, discord, email, gender, name, preview_avatar_id, steam, surname, vk} = req.body
+
+        let {birthdate, discord, email, gender, name, steam, surname, vk} = req.body
         const decoded = jwt.verify(req.headers.authorization.split(' ')[1], SECRET_WORD)
-        if (typeof (id) == "undefined")
-            res.json("You must give an id");
-        else {
-            const updatedUser = await db.query('UPDATE t_user_information SET birthdate=$1, discord=$2, email=$3, gender=$4, name=$5, preview_avatar_id=$6, steam=$7, surname=$8, vk=$9 where id=$10 returning *',
-                [birthdate, discord, email, gender, name, preview_avatar_id, steam, surname, vk, decoded.userId]);
-            res.json(updatedUser.rows);
-        }
+        const updatedUser = await db.query('UPDATE t_user_information SET birthdate=$1, discord=$2, email=$3, gender=$4, name=$5, steam=$6, surname=$7, vk=$8 where id=$9 returning *',
+            [birthdate, discord, email, gender, name, steam, surname, vk, decoded.userId]);
+        res.json(updatedUser.rows);
+
     }
 
     async deleteUserInformation(req, res) {

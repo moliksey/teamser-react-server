@@ -1,5 +1,6 @@
 const Express = require('express');
 const passport = require('passport');
+const http = require("http");
 const userRouter = require('./routes/user.routes')
 const adRouter = require('./routes/ad.routes')
 const avatarRouter = require('./routes/avatar.routes')
@@ -11,8 +12,13 @@ const roleRouter = require('./routes/role.routes')
 const userInformationRouter = require('./routes/userInformation.routes')
 const userToRolesRouter = require('./routes/userToRoles.routes')
 const authRouter = require('./routes/auth.routes')
+const { Server } = require("socket.io");
+const onConnection=require ('./socket_io/onConnection.js')
 const cors = require('cors')
-
+const db = require("./db");
+const jwt = require("jsonwebtoken");
+const SECRET_WORD = require("./config");
+const ALLOWED_ORIGIN = 'http://localhost:3000'
 const app = new Express();
 
 //app.use((ctx, next)=>{
@@ -35,4 +41,56 @@ app.use(passport.initialize())
 require('./middlewares/authJwtMiddleware')(passport)
 
 
-app.listen(3000);
+/////////////////////////////////////////////////////////////////
+const server = http.createServer(app)
+
+const io = new Server(server,{
+    cors: {
+        origin: '*'
+    }
+})
+
+io.on('connect',(socket) => {
+    console.log('IO CONN')
+    socket.on("get messages", async (data)=>{
+        if(data.authorization.split(' ')[1]!=''){
+        const decoded = jwt.verify(data.authorization.split(' ')[1], SECRET_WORD)
+        let dialog = await db.query('SELECT * FROM t_dialogs where id=$1', [data.dialogId]);
+        if(dialog.rows[0].user1_id==decoded.userId ||dialog.rows[0].user2_id==decoded.userId)
+        {let messages = await db.query('SELECT * FROM t_messages where dialog_id=$1 order by date limit 100', [data.dialogId]);
+            socket.join(data.dialogId);
+        io.to(data.dialogId).emit("get messages",{user: decoded.userId, messages: messages.rows})}
+        else{
+            io.emit("get messages",{messages: null})
+        }}
+        else io.emit("get messages",{messages: null})
+    })
+    socket.on("addMessage", async (data)=>{
+        const decoded = jwt.verify(data.authorization.split(' ')[1], SECRET_WORD)
+        const newMessage = await db.query('INSERT INTO t_messages (date, is_read, text, user_id, dialog_id) values (now(), false, $1, $2, $3) returning *', [decoded.username + ": " + data.text, decoded.userId, data.dialogId]);
+        let messages = await db.query('SELECT * FROM t_messages where dialog_id=$1 order by date limit 100', [data.dialogId]);
+        io.to(data.dialogId).emit("addMessage", {user: decoded.userId, messages: messages.rows})
+    })
+    socket.on("delMessage", async (data)=>{
+        const decoded = jwt.verify(data.authorization.split(' ')[1], SECRET_WORD)
+        const message = await db.query('SELECT * FROM t_messages where id=$1 and user_id=$2', [data.id, decoded.userId]);
+        let delMsg
+        if (message.rows[0]!='')
+             delMsg= await db.query('DELETE FROM t_messages where id=$1', [data.id]);
+        let messages = await db.query('SELECT * FROM t_messages where dialog_id=$1 order by date limit 100', [data.dialogId]);
+        io.to(data.dialogId).emit("delMessage", {user: decoded.userId,messages: messages.rows})
+    })
+    socket.on("updateMessage", async (data)=>{
+        const decoded = jwt.verify(data.authorization.split(' ')[1], SECRET_WORD)
+        const message = await db.query('SELECT * FROM t_messages where id=$1 and user_id=$2', [data.id, decoded.userId]);
+        let delMsg
+        if (message.rows[0])
+            delMsg= await db.query('UPDATE t_messages SET text=$1 where id=$2 returning *', [decoded.username + ": "+data.text, data.id]);
+        let messages = await db.query('SELECT * FROM t_messages where dialog_id=$1 order by date limit 100', [data.dialogId]);
+        io.to(data.dialogId).emit("updateMessage", {user: decoded.userId,messages: messages.rows})
+    })
+})
+
+const PORT = process.env.PORT || 3000
+
+server.listen(PORT);

@@ -8,6 +8,6 @@ router.get('/users/:id', userController.getOneUser);
 router.get('/users', passport.authenticate('jwt', {session: false}), userController.getUsers);
 router.put('/users', passport.authenticate('jwt', {session: false}), userController.updateUser);
 router.delete('/users/:id', passport.authenticate('jwt', {session: false}), userController.deleteUser);
-router.get('/me',passport.authenticate('jwt', {session: false}), userController.getMyInformation)
+router.get('/me', userController.getMyInformation)
 
 module.exports = router;
