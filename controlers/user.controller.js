@@ -31,10 +31,12 @@ class UserController {
     }
     async getMyInformation(req, res){
 
-        if(req.headers.authorization.split(' ')[1]=='null')
+        if(req.headers.authorization.split(' ')[1]==='null')
         {
+            console.log(req.headers.authorization)
             res.json({isLoggedIn:false})
         }else{
+            console.log(req.headers.authorization)
         const decoded = jwt.verify(req.headers.authorization.split(' ')[1], SECRET_WORD);
 
         const ans={

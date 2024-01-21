@@ -26,13 +26,16 @@ class DialogController {
             else
                 op = await db.query('SELECT * FROM t_user where id=$1', [dialog.rows[index].user1_id]);
             let lastMessage=await db.query('SELECT * FROM t_messages where dialog_id=$1 order by date DESC', [dialog.rows[index].id]);
-            let ansStruct={
-                id:dialog.rows[index].id,
-                opname:op.rows[0].username,
-                date: lastMessage.rows[0].date,
-                text: lastMessage.rows[0].text
+            console.log(lastMessage.rows[0])
+            if(lastMessage.rows[0] !== undefined)  {
+                let ansStruct = {
+                    id: dialog.rows[index].id,
+                    opname: op.rows[0].username,
+                    date: lastMessage.rows[0].date,
+                    text: lastMessage.rows[0].text
+                }
+                ans.push(ansStruct);
             }
-            ans.push(ansStruct);
         }
         res.json(ans);
     }
