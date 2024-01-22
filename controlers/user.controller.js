@@ -7,11 +7,16 @@ class UserController {
     async createUser(req, res) {
         const {username, password} = req.body
         const passwordHashed = await passwordHash.generate(password);
-        const newUser = await db.query('INSERT INTO t_user (password, username) values ($1, $2) returning *', [passwordHashed, username]);
-        const newUserInformation = await db.query('INSERT INTO t_user_information (id) values ($1) returning *',[newUser.rows[0].id]);
-        const updateUser=await db.query('UPDATE t_user SET userinformation_id=$1 where id=$2 returning *', [newUser.rows[0].id, newUser.rows[0].id]);
+        const users = await db.query('SELECT username FROM t_user WHERE username=$1', [username]);
+        if(!users.rows[0]) {
+            const newUser = await db.query('INSERT INTO t_user (password, username) values ($1, $2) returning *', [passwordHashed, username]);
+            const newUserInformation = await db.query('INSERT INTO t_user_information (id) values ($1) returning *', [newUser.rows[0].id]);
+            const updateUser = await db.query('UPDATE t_user SET userinformation_id=$1 where id=$2 returning *', [newUser.rows[0].id, newUser.rows[0].id]);
 
-            res.json(newUser.rows[0].username);
+            res.json(true);
+        } else {
+            res.json(false);
+        }
     }
 
     async getUsers(req, res) {
@@ -29,22 +34,21 @@ class UserController {
         const user = await db.query('SELECT * FROM t_user where id=$1', [id]);
         res.json(user.rows[0].username);
     }
-    async getMyInformation(req, res){
 
-        if(req.headers.authorization.split(' ')[1]==='null')
-        {
-            console.log(req.headers.authorization)
-            res.json({isLoggedIn:false})
-        }else{
-            console.log(req.headers.authorization)
-        const decoded = jwt.verify(req.headers.authorization.split(' ')[1], SECRET_WORD);
+    async getMyInformation(req, res) {
 
-        const ans={
-            isLoggedIn:true,
-            id: decoded.userId,
-            username: decoded.username,
+        if (req.headers.authorization.split(' ')[1] === 'null') {
+            res.json({isLoggedIn: false})
+        } else {
+            const decoded = jwt.verify(req.headers.authorization.split(' ')[1], SECRET_WORD);
+
+            const ans = {
+                isLoggedIn: true,
+                id: decoded.userId,
+                username: decoded.username,
+            }
+            res.json(ans)
         }
-        res.json(ans)}
     }
 
     async updateUser(req, res) {

@@ -18,7 +18,6 @@ class UserInformationController {
         const id = req.params.id
         const userInformation = await db.query('SELECT * FROM t_user_information where id=$1', [id]);
         const user = await db.query('SELECT * FROM t_user where id=$1', [id]);
-
         res.json({userInfo:userInformation.rows[0],
         username:user.rows[0].username,
         userId:user.rows[0].id});
